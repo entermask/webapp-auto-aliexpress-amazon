@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link href="https://cdn.vivoo.vn/lib/mdbPRO/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="https://cdn.vivoo.vn/lib/mdbPRO/css/mdb.min.css" rel="stylesheet" />
+		<link href="https://cdn.vivoo.vn/lib/mdbPRO/css/addons/datatables.min.css" rel="stylesheet" />
+		<link href="https://cdn.vivoo.vn/lib/faPRO/css/all.min.css" rel="stylesheet" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>AMControl</title>
+  </head>
+  <body class="bg-dark text-white">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="text/javascript" src="https://cdn.vivoo.vn/lib/mdbPRO/js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://cdn.vivoo.vn/lib/mdbPRO/js/popper.min.js"></script>
+    <script type="text/javascript" src="https://cdn.vivoo.vn/lib/mdbPRO/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.vivoo.vn/lib/mdbPRO/js/mdb.min.js"></script>
+    <script>
+
+        $(function(){
+          $('[data-toggle="tooltip"]').tooltip();
+          $('.notify').on('click', function(){
+            $(this).fadeOut();
+          })
+          $('[data-toggle=modal]').on('click', function(){
+            $('tr.active').removeClass('active');
+          })
+        })
+
+        function PopupCenter(url, title, w, h) {
+        // Fixes dual-screen position                         Most browsers      Firefox
+        var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : window.screenX;
+        var dualScreenTop = window.screenTop != undefined ? window.screenTop : window.screenY;
+
+        var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+        var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+        var systemZoom = width / window.screen.availWidth;
+    var left = (width - w) / 2 / systemZoom + dualScreenLeft
+    var top = (height - h) / 2 / systemZoom + dualScreenTop
+        var newWindow = window.open(url, title, 'scrollbars=yes, width=' + w / systemZoom + ', height=' + h / systemZoom + ', top=' + top + ', left=' + left);
+
+        // Puts focus on the newWindow
+        if (window.focus) newWindow.focus();
+    }
+    </script>
+  </body>
+</html>
