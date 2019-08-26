@@ -11,7 +11,6 @@ const isAuth = async () => {
       login = false;
     else
       login = true;
-    return true;
     return login;
 }
 

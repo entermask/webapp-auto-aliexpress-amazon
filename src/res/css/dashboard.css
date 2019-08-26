@@ -35,9 +35,18 @@
 }
 
 .content {
-    color: #dfdfdf;
-    padding-left: 280px;
+    color: #2e2e2e;
+    padding-left: 250px;
     flex: 1;
+}
+
+.tool {
+    cursor: pointer;
+    transition: all.3s;
+}
+
+.tool:hover {
+    color: #ff6000;
 }
 
 .img-rounded {
@@ -74,11 +83,11 @@ body {
 }
 
 span.online {
-    color: #65d365;
+    color: #28a745;
 }
 
 .color_green {
-    color: #65d365;
+    color: #28a745;
 }
 
 .color_red {
@@ -136,9 +145,9 @@ tr.active {
 }
 
 .shipment {
-    float: right;
-    font-size: large;
-    color: burlywood;
+    color: #dc3545;
+    display: inline-block;
+    margin-left: 1ch;
 }
 
 @-webkit-keyframes swal2-show{
