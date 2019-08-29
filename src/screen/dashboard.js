@@ -504,7 +504,7 @@ class Product extends React.Component {
                    <form onSubmit={this.uploadFile}>
                     { (this.state.uploadPercent === 0 || this.state.uploadPercent === 100) ? <input onChange={this.chooseFile} type="file" accept=".xlsx" name="exel" className="form-control mt-2" style={{ paddingTop: '3.5px' }} /> :  
                     <div className="progress md-progress mt-2" style={{ height: '.75rem'}}>
-                        <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: this.state.uploadPercent+'%', height: '.75rem'}}>{this.state.uploadPercent}%</div>
+                        <div className="progress-bar progress-bar-striped" role="progressbar" style={{width: this.state.uploadPercent+'%', height: '.75rem'}}>{this.state.uploadPercent}%</div>
                     </div>
                     }
                     <center>
@@ -975,7 +975,7 @@ class Tracking extends React.Component {
                    <form onSubmit={this.uploadFile}>
                     { (this.state.uploadPercent === 0 || this.state.uploadPercent === 100) ? <input onChange={this.chooseFile} type="file" accept=".xlsx" name="exel" className="form-control mt-2" style={{ paddingTop: '3.5px' }} /> :  
                     <div className="progress md-progress mt-2" style={{ height: '.75rem'}}>
-                        <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: this.state.uploadPercent+'%', height: '.75rem'}}>{this.state.uploadPercent}%</div>
+                        <div className="progress-bar progress-bar-striped" role="progressbar" style={{width: this.state.uploadPercent+'%', height: '.75rem'}}>{this.state.uploadPercent}%</div>
                     </div>
                     }
                     <center>
