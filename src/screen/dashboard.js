@@ -202,6 +202,16 @@ class Product extends React.Component {
         }
     }
 
+    empty = async () => {
+        await fetch(home+'/api/empty/product');
+        toast.success(<span><i className="fa fa-check-circle fa-fw"/> Thực thi thành công !</span>)
+        this.setState({
+            getProductList : [],
+            demAmazon : 0
+        })
+    }
+
+
     componentWillMount()
     {
         store.dispatch({ type: 'product' });
@@ -407,7 +417,7 @@ class Product extends React.Component {
                 selector: 'created_at',
                 sortable: true,
                 grow: 0.5,
-                format: value => (new Date(value.created_at+3600000*7).getDate())+'/'+(new Date(value.created_at+3600000*7).getMonth()+1)+'/'+(new Date(value.created_at+3600000*7).getFullYear())
+                format: value => (new Date(value.created_at).getDate())+'/'+(new Date(value.created_at).getMonth())+'/'+(new Date(value.created_at).getFullYear())
             },
             {
                 selector: 'tool',
@@ -451,6 +461,7 @@ class Product extends React.Component {
         <i onClick={() => this.setState({ notice : null })} data-target="#addnew" data-toggle="modal" className="fal fa-plus-square mr-5 tool" data-tip="Thêm bản ghi"></i>
         <i onClick={() => this.setState({ notice : null })} data-target="#upload" data-toggle="modal" className="fal fa-file-excel mr-5 tool" data-tip="Đồng bộ Excel"></i>
         <i onClick={() => this.setState({ notice : null })} data-target="#autoAmazon" data-toggle="modal" className="fab fa-amazon mr-5 tool" data-tip="Auto Post Amazon"></i>
+        <i data-target="#empty" data-toggle="modal" className="fal fa-trash-alt mr-5 tool" data-tip="Empty list"></i>
         <i className="fal fa-question mr- 5" data-tip data-for="global"></i>
         </div>
         <hr/>
@@ -463,6 +474,28 @@ class Product extends React.Component {
         <ToastContainer 
         position="top-center"
         newestOnTop />
+
+<div className="modal fade" id="empty" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+
+        <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
+            <div className="modal-content">
+            <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLongTitle"><i className="fal fa-trash fa-fw"></i> Empty List</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div className="modal-body">
+                <center>
+                Bạn có chắc chắn muốn làm trống dữ liệu ?<br />
+                <button className="btn btn-danger" onClick={this.empty} data-dismiss="modal">ĐỒNG Ý</button>
+                <button className="btn btn-secondary" data-dismiss="modal" >HỦY</button>       
+                </center>        
+            </div>
+            </div>
+        </div>
+        </div>
 
         <div className="modal fade" id="autoAmazon" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
@@ -734,7 +767,7 @@ class Tracking extends React.Component {
                 toast.success(<span><i className="fa fa-check-circle fa-fw"/> Xóa Tracking thành công !</span>)
             store.dispatch({ type: 'updateTke' });
             document.querySelector('#editProduct .close').click();
-            this.getTrackingList();
+            await this.getTrackingList();
         }
     }
 
@@ -767,24 +800,23 @@ class Tracking extends React.Component {
                     document.querySelector('a[title="Get Tracking"]').click();
             },200)
         }
-        console.log(getTrackingList);
     }
     
     getTracking = () => {
         this.setState({ currentID: null });
         const socket = io(home);
-        socket.on('tracking', (tracking) => {
+        socket.on('tracking', async (tracking) => {
             toast.success(<span><i className="fa fa-check-circle fa-fw"/> Get Tracking thành công !</span>)
-            this.getTrackingList();
+            await this.getTrackingList();
             socket.disconnect(0);
         });
     }
 
     reconfirmTracking = () => {
         const socket = io(home);
-        socket.on('reconfirmTracking', (tracking) => {
+        socket.on('reconfirmTracking', async (tracking) => {
             toast.success(<span><i className="fa fa-check-circle fa-fw"/> Reconfirm Tracking thành công !</span>)
-            this.getTrackingList();
+            await this.getTrackingList();
             socket.disconnect(0);
         });
     }
@@ -806,6 +838,16 @@ class Tracking extends React.Component {
             status : 'sẵn sàng để upload'
         });
         console.log(e.target.files[0])
+    }
+
+    empty = async () => {
+        await fetch(home+'/api/empty/tracking');
+        toast.success(<span><i className="fa fa-check-circle fa-fw"/> Thực thi thành công !</span>)
+        this.setState({
+            getTrackingList : [],
+            demAli : 0,
+            demAmazon : 0
+        })
     }
 
     uploadFile = async (e) => {
@@ -832,7 +874,7 @@ class Tracking extends React.Component {
             status: <font color="green">upload thành công !</font>
         })
         document.querySelector('input[type=file]').value = '';
-        this.getTrackingList();
+        await this.getTrackingList();
     }
 
     render()
@@ -840,9 +882,9 @@ class Tracking extends React.Component {
         const columns = [
             {
               name: 'Account',
-              selector: 'account',
+              selector: 'amazon',
               sortable: true,
-              format: i => <span>{ i.account }<br/> <small>amz: {i.amazon}</small></span>
+              format: i => <span>{ i.amazon }<br/> <small>{i.account}</small></span>
             },
             {
               name: 'Amazon Order ID',
@@ -878,6 +920,11 @@ class Tracking extends React.Component {
                 selector: 'address'
             },
             {
+                name: 'Ngày tạo',
+                selector: 'time',
+                format: (v) => <span>{new Date(v.time).getDate()+'/'+(new Date(v.time).getMonth())+'/'+new Date(v.time).getFullYear()}</span>
+            },
+            {
                 selector: 'tool',
                 right: true,
                 format: value => (<span>{ !value.tracking ?
@@ -896,6 +943,7 @@ class Tracking extends React.Component {
             <i onClick={() => this.setState({ notice : null })} data-target="#upload" data-toggle="modal" className="fal fa-file-excel mr-5 tool" data-tip="Đồng bộ Excel"></i>
             <i data-target="#autoAli" data-toggle="modal" className="fal fa-shopping-cart mr-5 tool" data-tip="Auto Get Tracking"></i>
             <i data-target="#autoAmazon" data-toggle="modal" className="fab fa-amazon mr-5 tool" data-tip="Auto Confirm Tracking"></i>
+            <i data-target="#empty" data-toggle="modal" className="fal fa-trash-alt mr-5 tool" data-tip="Empty list"></i>
             <i className="fal fa-question mr-5" data-tip data-for="global"></i>
             </div>
             <hr/>
@@ -908,6 +956,29 @@ class Tracking extends React.Component {
             <ToastContainer 
             position="top-center"
             newestOnTop />
+
+    <div className="modal fade" id="empty" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+
+        <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
+            <div className="modal-content">
+            <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLongTitle"><i className="fal fa-trash fa-fw"></i> Empty List</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div className="modal-body">
+                <center>
+                Bạn có chắc chắn muốn làm trống dữ liệu ?<br />
+                <button className="btn btn-danger" onClick={this.empty} data-dismiss="modal">ĐỒNG Ý</button>
+                <button className="btn btn-secondary" data-dismiss="modal" >HỦY</button>       
+                </center>        
+            </div>
+            </div>
+        </div>
+        </div>
+
         <div className="modal fade" id="autoAli" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
