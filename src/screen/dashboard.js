@@ -23,8 +23,6 @@ import ReactTooltip from 'react-tooltip'
   }
   
   const reducer = combineReducers({ analytics, currentMenu });
-  // Create a Redux store holding the state of your app.
-  // Its API is { subscribe, dispatch, getState }.
   const store = createStore(reducer)
 
   class AutoPost extends React.Component {
@@ -45,10 +43,33 @@ class Analytics extends React.Component {
     constructor(props)
     {
         super(props);
+        const x = new Date();
+        const t = new Date(x-86400000);
+        const tp = new Date(x-86400000*2);
+        let tdate = "0", tmonth = "0", tpdate = "0", tpmonth = "0";
+        if(t.getDate() > 9)
+            tdate = t.getDate();
+        else
+            tdate += t.getDate();
+        if(tp.getDate() > 9)
+            tpdate = tp.getDate();
+        else
+            tpdate += tp.getDate();
+        if(t.getMonth() > 8)
+            tmonth = t.getMonth()+1;
+        else
+            tmonth += t.getMonth()+1;
+        if(tp.getMonth() > 8)
+            tpmonth = tp.getMonth()+1;
+        else
+            tpmonth += tp.getMonth()+1;
         this.state = {
-            dataDay : [],
-            loading: true
+            dataDay: [],
+            loading: true,
+            dateNow: tmonth+'-'+tdate+'-'+t.getFullYear(),
+            distinctDate: []
         }
+        this.dateValue = React.createRef();
     }
 
     componentWillMount()
@@ -56,8 +77,14 @@ class Analytics extends React.Component {
         store.dispatch({ type : 'analytics' })
     }
 
+    getDistinctDate = async () => {
+        let call = await fetch(home+'/api/get/distinctAnalyticsDate');
+        let distinctDate = await call.json();
+        this.setState({ distinctDate })
+    }
+
     getAnalytics = async () => {
-        let call = await fetch(home+'/api/fetch/analytics');
+        let call = await fetch(home+'/api/fetch/analytics/'+this.state.dateNow);
         try {
             let dataDay = await call.json();
             if(dataDay)
@@ -68,12 +95,21 @@ class Analytics extends React.Component {
         }
     }
 
+    xem = async () => {
+        await this.setState({ dateNow: this.dateValue.current.value });
+        console.log(this.dateValue.current.value);
+        await this.getAnalytics();
+        toast.success(<span><i className="fal fa-check-circle"></i> Get dữ liệu thành công !</span>)
+    }
+
     async componentDidMount()
     {
+        await this.getDistinctDate();
         await this.getAnalytics();
         const socket = io(home)
         socket.on('analytics', async () => {
             await this.getAnalytics();
+            toast.success(<span><i className="fa fa-check-circle fa-fw"/> Thực thi thành công !</span>)
             socket.disconnect(0);
         })
     }
@@ -101,8 +137,10 @@ class Analytics extends React.Component {
         else
             tpmonth += tp.getMonth()+1;
         return (
-            <div>
-
+            <div className="ml-4 mt-2">
+                <ToastContainer 
+        position="top-center"
+        newestOnTop />
                 <table className="table table-striped">
                     <thead>
                         <tr>
@@ -140,6 +178,14 @@ class Analytics extends React.Component {
                         }
                     </tbody>
                 </table>
+                <select className="form-control" ref={this.dateValue}>
+                    { 
+                        this.state.distinctDate.map((value, i) => 
+                            <option key={i} value={value.time}>{value.time}</option>
+                        ) 
+                    }
+                </select>
+                <button className="btn btn-primary ml-0" onClick={this.xem}><i className="fal fa-eye fa-fw"></i> Xem</button>
                 <a href={'javascript:PopupCenter("https://sellercentral.amazon.com/gp/site-metrics/report.html#&cols=/c0/c1/c2/c3/c4/c5/c6/c7/c8/c9/c10/c11/c12&sortColumn=13&filterFromDate='+tpmonth+'/'+tpdate+'/'+tp.getFullYear()+'&filterToDate='+tmonth+'/'+tdate+'/'+t.getFullYear()+'&fromDate='+tpmonth+'/'+tpdate+'/'+tp.getFullYear()+'&toDate='+tmonth+'/'+tdate+'/'+t.getFullYear()+'&reportID=102:DetailSalesTrafficBySKU&sortIsAscending=0&currentPage=0&dateUnit=1&viewDateUnits=ALL&runDate=", "Update Time", 400, 400)'} className="btn btn-secondary mx-0"><i className="fal fa-sync fa-fw"></i> Đồng Bộ Ngày { tmonth+' / '+tdate+' / '+t.getFullYear() }</a>
                 <div className="mt-4">Hãy login vào account amazon cần đồng bộ<br/>
                 Hãy chắc chắn bạn đã cài Aliv Extension</div>
@@ -181,8 +227,11 @@ class Product extends React.Component {
     }
 
     getProductList = async () => {
+        console.log('haha');
         let call = await fetch(home+'/api/fetch/product');
+        console.log('haha');
         let getProductList = await call.json();
+        console.log(getProductList);
         let demAmazon = 0;
         for(let value of getProductList)
         {
@@ -200,6 +249,7 @@ class Product extends React.Component {
                     document.querySelector('a[title="Post lên Amazon"]').click();
             },200)
         }
+        return true;
     }
 
     empty = async () => {
@@ -211,7 +261,6 @@ class Product extends React.Component {
         })
     }
 
-
     componentWillMount()
     {
         store.dispatch({ type: 'product' });
@@ -220,7 +269,7 @@ class Product extends React.Component {
     async componentDidMount()
     {
         await this.getProductList();
-        console.log('call mount');
+        console.log('xong product');
     }
 
     receiveUploaded = async () => {
@@ -285,10 +334,10 @@ class Product extends React.Component {
             {
                 toast.success(<span><i className="fa fa-check-circle fa-fw"></i> Xóa thành công !</span>)
                 document.querySelector('#editProduct .close').click();
-                store.dispatch({ type: 'updateTke' });
+                // store.dispatch({ type: 'updateTke' });
             } else
                 toast.success(<span><i className="fa fa-check-circle fa-fw"></i> Sửa thành công !</span>)
-            this.getProductList();
+            await this.getProductList();
         }
     }
 
@@ -325,14 +374,14 @@ class Product extends React.Component {
                 notice : <div className="alert alert-danger">ASIN bị trùng !</div>
             })
         } else {
-            store.dispatch({ type: 'updateTke' });
             toast.success(<span><i className="fa fa-check-circle fa-fw"></i> Thêm thành công !</span>)
             this.setState({
                 notice : <div className="alert alert-success">Thêm thành công !</div>
             })
-            this.getProductList();
             for (var value of document.querySelectorAll('#addnew input'))
                 value.value = ''
+            await this.getProductList();
+            store.dispatch({ type: 'updateTke' });
         }
     }
 
@@ -417,7 +466,7 @@ class Product extends React.Component {
                 selector: 'created_at',
                 sortable: true,
                 grow: 0.5,
-                format: value => (new Date(value.created_at).getDate())+'/'+(new Date(value.created_at).getMonth())+'/'+(new Date(value.created_at).getFullYear())
+                format: value => (new Date(value.created_at).getDate())+'/'+(new Date(value.created_at).getMonth()+1)+'/'+(new Date(value.created_at).getFullYear())
             },
             {
                 selector: 'tool',
@@ -475,7 +524,7 @@ class Product extends React.Component {
         position="top-center"
         newestOnTop />
 
-<div className="modal fade" id="empty" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+<div className="modal fade" id="empty" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
@@ -497,7 +546,7 @@ class Product extends React.Component {
         </div>
         </div>
 
-        <div className="modal fade" id="autoAmazon" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        <div className="modal fade" id="autoAmazon" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
@@ -526,7 +575,7 @@ class Product extends React.Component {
         </div>
 
 
-        <div className="modal fade bottom" id="upload" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        <div className="modal fade bottom" id="upload" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-frame modal-bottom modal-notify modal-success" role="document" style={{ color: '#333' }}>
@@ -701,7 +750,7 @@ class Tracking extends React.Component {
         this.amazon.current.blur();
         this.aliexpress.current.blur();
         let call = await fetch(home+'/api/insert/tracking', {
-            method : "POST",
+            method : 'POST',
             headers : {
                 'Content-Type' : 'application/json'
             },
@@ -740,7 +789,7 @@ class Tracking extends React.Component {
         this.amazon.current.blur();
         this.aliexpress.current.blur();
         let call = await fetch(home+'/api/update/tracking', {
-            method : "POST",
+            method : 'POST',
             headers : {
                 'Content-Type' : 'application/json'
             },
@@ -800,6 +849,7 @@ class Tracking extends React.Component {
                     document.querySelector('a[title="Get Tracking"]').click();
             },200)
         }
+        return true;
     }
     
     getTracking = () => {
@@ -829,6 +879,7 @@ class Tracking extends React.Component {
 
     async componentDidMount(){
         await this.getTrackingList();
+        console.log('get xong');
     }
 
     chooseFile = e => {
@@ -922,7 +973,7 @@ class Tracking extends React.Component {
             {
                 name: 'Ngày tạo',
                 selector: 'time',
-                format: (v) => <span>{new Date(v.time).getDate()+'/'+(new Date(v.time).getMonth())+'/'+new Date(v.time).getFullYear()}</span>
+                format: (v) => <span>{new Date(v.time).getDate()+'/'+(new Date(v.time).getMonth()+1)+'/'+new Date(v.time).getFullYear()}</span>
             },
             {
                 selector: 'tool',
@@ -957,7 +1008,7 @@ class Tracking extends React.Component {
             position="top-center"
             newestOnTop />
 
-    <div className="modal fade" id="empty" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    <div className="modal fade" id="empty" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
@@ -979,7 +1030,7 @@ class Tracking extends React.Component {
         </div>
         </div>
 
-        <div className="modal fade" id="autoAli" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        <div className="modal fade" id="autoAli" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
@@ -1007,7 +1058,7 @@ class Tracking extends React.Component {
             </div>
         </div>
         </div>
-        <div className="modal fade" id="autoAmazon" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        <div className="modal fade" id="autoAmazon" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-dialog-centered" role="document" style={{ color: '#333' }}>
@@ -1035,7 +1086,7 @@ class Tracking extends React.Component {
         </div>
         </div>
 
-        <div className="modal fade bottom" id="upload" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        <div className="modal fade bottom" id="upload" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
         aria-hidden="true">
 
         <div className="modal-dialog modal-frame modal-bottom modal-notify modal-success" role="document" style={{ color: '#333' }}>
